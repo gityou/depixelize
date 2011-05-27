@@ -33,22 +33,22 @@
 
 function rgb_to_yuv ( imd ) {
   var yuv = { width: imd.width, height: imd.height }
+  var Wr = 0.299;
+  var Wb = 0.114;
+  var Wg = 0.587;
+  var Umax = 0.436;
+  var Vmax = 0.615;
+
   for (var x = 0; x < imd.width; x++)
   for (var y = 0; y < imd.height; y++)
   {
-    var Wr = 0.299;
-    var Wb = 0.114;
-    var Wg = 0.587;
-    var Umax = 0.436;
-    var Vmax = 0.615;
-
     var offset = (y*imd.width + x)*4;
     var r = imd.data[offset];
     var g = imd.data[offset + 1];
     var b = imd.data[offset + 2];
     imd.data[offset+3] = 120;
 
-    var Y = Wr*r + Wg*g + Wb+b;
+    var Y = Wr*r + Wg*g + Wb*b;
     var U = Umax * (b-Y)/(1-Wb);
     var V = Vmax * (r-Y)/(1-Wr);
     
@@ -56,6 +56,19 @@ function rgb_to_yuv ( imd ) {
   }
   return yuv;
 }
+function yuv_add_edges( yuv ) {
+  for (var x = 0; x < yuv.width; x++)
+  for (var y = 0; y < yuv.height; y++)
+  {
+    if( x < yuv.width-1 ) yuv[x,y,x+1,y] = true;
+    if( y < yuv.height-1 ) yuv[x,y,x,y+1] = true;
+    if( x < yuv.width-1 && y < yuv.height-1 ) {
+      yuv[x,y,x+1,y+1] = true;
+      yuv[x+1,y,x,y+1] = true;
+    }
+  }  
+}
+
 
 function render_depixelized( image_id, canvas_id ) {
   var image = document.getElementById( image_id );
@@ -65,5 +78,6 @@ function render_depixelized( image_id, canvas_id ) {
   ctx.drawImage(image,0,0,245,100);
   var imd = ctx.getImageData(0,0,245,100);
   var yuv = rgb_to_yuv( imd );
+  var yuv = yuv_add_edges( yuv );
   ctx.putImageData(imd,0,0);
 }
