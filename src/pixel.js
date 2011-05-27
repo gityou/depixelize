@@ -89,6 +89,31 @@ function yuv_remove_dissimilar_edges( yuv ) {
       delete yuv.edges[e];    
   }
 }
+function yuv_remove_crossbar( yuv ) {
+  for (var x = 0; x < yuv.width-1; x++)
+  for (var y = 0; y < yuv.height-1; y++)
+  {
+    var tl = [ x, y ];
+    var tr = [ x+1, y ];
+    var bl = [ x, y+1 ];
+    var br = [ x+1, y+1 ];
+    
+    if( yuv.edges[[ tl[0], tl[1], tr[0], tr[1] ]] &&
+        yuv.edges[[ tl[0], tl[1], bl[0], bl[1] ]] &&
+        yuv.edges[[ tl[0], tl[1], br[0], br[1] ]] &&
+        yuv.edges[[ bl[0], bl[1], br[0], br[1] ]] &&
+        yuv.edges[[ tr[0], tr[1], bl[0], bl[1] ]] &&
+        yuv.edges[[ tr[0], tr[1], br[0], br[1] ]] )
+    {
+      delete yuv.edges[[ tl[0], tl[1], br[0], br[1] ]];
+      delete yuv.edges[[ tr[0], tr[1], bl[0], bl[1] ]];
+    }         
+  }
+}
+
+function count_edges( yuv ){
+  alert( "edge count: " + sizeof(yuv.edges) );
+}
 function render_remove_dissimilar_edges( imd, yuv ) {
   for (var x = 0; x < imd.width; x++)
   for (var y = 0; y < imd.height; y++)
@@ -126,6 +151,11 @@ function render_depixelized( image_id, canvas_id ) {
   var yuv = rgb_to_yuv( imd );
   yuv_add_edges( yuv );
   yuv_remove_dissimilar_edges( yuv );
+  yuv_remove_crossbar( yuv );
+  
+  //count_edges( yuv );
+  //count_edges( yuv );
+
   render_remove_dissimilar_edges( imd, yuv );
   ctx.putImageData(imd,0,0);
 }
