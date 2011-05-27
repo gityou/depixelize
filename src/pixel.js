@@ -31,13 +31,39 @@
 
 */
 
+function rgb_to_yuv ( imd ) {
+  var yuv = { width: imd.width, height: imd.height }
+  for (var x = 0; x < imd.width; x++)
+  for (var y = 0; y < imd.height; y++)
+  {
+    var Wr = 0.299;
+    var Wb = 0.114;
+    var Wg = 0.587;
+    var Umax = 0.436;
+    var Vmax = 0.615;
 
-function render_depixelized(args) {
-  var image = document.getElementById(args.image);
-  var canvas = document.getElementById(args.canvas);
+    var offset = (y*imd.width + x)*4;
+    var r = imd.data[offset];
+    var g = imd.data[offset + 1];
+    var b = imd.data[offset + 2];
+    imd.data[offset+3] = 120;
+
+    var Y = Wr*r + Wg*g + Wb+b;
+    var U = Umax * (b-Y)/(1-Wb);
+    var V = Vmax * (r-Y)/(1-Wr);
+    
+    yuv[x,y] = [Y,U,V];
+  }
+  return yuv;
+}
+
+function render_depixelized( image_id, canvas_id ) {
+  var image = document.getElementById( image_id );
+  var canvas = document.getElementById( canvas_id );
   var ctx = canvas.getContext ('2d');
 
   ctx.drawImage(image,0,0,245,100);
   var imd = ctx.getImageData(0,0,245,100);
+  var yuv = rgb_to_yuv( imd );
   ctx.putImageData(imd,0,0);
 }
