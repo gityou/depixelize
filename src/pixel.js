@@ -54,7 +54,6 @@ function rgb_to_yuv ( imd ) {
     var r = imd.data[offset];
     var g = imd.data[offset + 1];
     var b = imd.data[offset + 2];
-    imd.data[offset+3] = 120;
 
     var Y = Wr*r + Wg*g + Wb*b;
     var U = Umax * (b-Y)/(1-Wb);
@@ -90,6 +89,32 @@ function yuv_remove_dissimilar_edges( yuv ) {
       delete yuv.edges[e];    
   }
 }
+function render_remove_dissimilar_edges( imd, yuv ) {
+  for (var x = 0; x < imd.width; x++)
+  for (var y = 0; y < imd.height; y++)
+  {
+    var offset = (y*imd.width + x)*4;
+    imd.data[offset+0] = 255;
+    imd.data[offset+1] = 255;
+    imd.data[offset+2] = 255;
+    imd.data[offset+3] = 255;
+  }
+  
+  for (var x = 0; x < imd.width-1; x++)
+  for (var y = 0; y < imd.height-1; y++)
+  {
+    if( !yuv.edges[[x,y,x+1,y]] ||
+        !yuv.edges[[x,y,x,y+1]] ||
+        !yuv.edges[[x,y,x+1,y+1]] )
+    {
+      var offset = (y*imd.width + x)*4;
+      imd.data[offset+0] = 0;
+      imd.data[offset+1] = 0;
+      imd.data[offset+2] = 0;
+    }
+  }
+} 
+
 
 function render_depixelized( image_id, canvas_id ) {
   var image = document.getElementById( image_id );
@@ -101,5 +126,6 @@ function render_depixelized( image_id, canvas_id ) {
   var yuv = rgb_to_yuv( imd );
   yuv_add_edges( yuv );
   yuv_remove_dissimilar_edges( yuv );
+  render_remove_dissimilar_edges( imd, yuv );
   ctx.putImageData(imd,0,0);
 }
