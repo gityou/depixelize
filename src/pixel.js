@@ -31,8 +31,16 @@
 
 */
 
+
+var abs = Math.abs;
+function sizeof( v ){
+  var count = 0;
+  for( var _ in v ) count ++;
+  return count;
+}
+
 function rgb_to_yuv ( imd ) {
-  var yuv = { width: imd.width, height: imd.height }
+  var yuv = { width: imd.width, height: imd.height, edges: {} }
   var Wr = 0.299;
   var Wb = 0.114;
   var Wg = 0.587;
@@ -52,7 +60,7 @@ function rgb_to_yuv ( imd ) {
     var U = Umax * (b-Y)/(1-Wb);
     var V = Vmax * (r-Y)/(1-Wr);
     
-    yuv[x,y] = [Y,U,V];
+    yuv[[x,y]] = [Y,U,V];
   }
   return yuv;
 }
@@ -60,15 +68,28 @@ function yuv_add_edges( yuv ) {
   for (var x = 0; x < yuv.width; x++)
   for (var y = 0; y < yuv.height; y++)
   {
-    if( x < yuv.width-1 ) yuv[x,y,x+1,y] = true;
-    if( y < yuv.height-1 ) yuv[x,y,x,y+1] = true;
+    if( x < yuv.width-1 ) yuv.edges[[x,y,x+1,y]] = true;
+    if( y < yuv.height-1 ) yuv.edges[[x,y,x,y+1]] = true;
     if( x < yuv.width-1 && y < yuv.height-1 ) {
-      yuv[x,y,x+1,y+1] = true;
-      yuv[x+1,y,x,y+1] = true;
+      yuv.edges[[x,y,x+1,y+1]] = true;
+      yuv.edges[[x+1,y,x,y+1]] = true;
     }
   }  
 }
 
+function yuv_remove_dissimilar_edges( yuv ) {
+  for (var e in yuv.edges) 
+  {
+    var ve = eval("[" + e + "]");
+    var n1 = yuv[[ ve[0],ve[1] ]];
+    var n2 = yuv[[ ve[2],ve[3] ]];
+
+    if( abs(n1[0]-n2[0])>48 ||  
+        abs(n1[1]-n2[1])>(7/255) ||
+        abs(n1[2]-n2[2])>(6/255) )
+      delete yuv.edges[e];    
+  }
+}
 
 function render_depixelized( image_id, canvas_id ) {
   var image = document.getElementById( image_id );
@@ -78,6 +99,7 @@ function render_depixelized( image_id, canvas_id ) {
   ctx.drawImage(image,0,0,245,100);
   var imd = ctx.getImageData(0,0,245,100);
   var yuv = rgb_to_yuv( imd );
-  var yuv = yuv_add_edges( yuv );
+  yuv_add_edges( yuv );
+  yuv_remove_dissimilar_edges( yuv );
   ctx.putImageData(imd,0,0);
 }
