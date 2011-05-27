@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Depixelizing Pixel Art</title>
+    <style>
+      * { margin: 0; padding: 0; }
+      body > * { display: table; margin: 50px auto;  }
+    </style>
+    <script type="text/javascript" src="../pixel.js"></script>
+  </head>
+  <body onload="render_depixelized({ image:'dolphin.png', canvas:'canvas' })">
+    <div><img id="dolphin" src="dolphin.png" height="100px"/></div>
+    <div><canvas id="canvas"></canvas></div>
+  </body>
+</html>
