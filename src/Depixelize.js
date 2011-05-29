@@ -32,21 +32,16 @@
 */
 
 
-var abs = Math.abs;
-function sizeof( v ){
-  var count = 0;
-  for( var _ in v ) count ++;
-  return count;
-}
-
-function rgb_to_yuv ( imd ) {
-  var yuv = { width: imd.width, height: imd.height, edges: {} }
+function imd_to_graph ( imd ) {
   var Wr = 0.299;
   var Wb = 0.114;
   var Wg = 0.587;
   var Umax = 0.436;
   var Vmax = 0.615;
 
+  var gr = Graph( true );
+
+  //add nodes
   for (var x = 0; x < imd.width; x++)
   for (var y = 0; y < imd.height; y++)
   {
@@ -59,37 +54,38 @@ function rgb_to_yuv ( imd ) {
     var U = Umax * (b-Y)/(1-Wb);
     var V = Vmax * (r-Y)/(1-Wr);
     
-    yuv[[x,y]] = [Y,U,V];
+    gr.add_node( [x,y], [Y,U,V] );
   }
-  return yuv;
-}
-function yuv_add_edges( yuv ) {
-  for (var x = 0; x < yuv.width; x++)
-  for (var y = 0; y < yuv.height; y++)
+
+  //add edges
+  for (var x = 0; x < imd.width; x++)
+  for (var y = 0; y < imd.height; y++)
   {
-    if( x < yuv.width-1 ) yuv.edges[[x,y,x+1,y]] = true;
-    if( y < yuv.height-1 ) yuv.edges[[x,y,x,y+1]] = true;
-    if( x < yuv.width-1 && y < yuv.height-1 ) {
-      yuv.edges[[x,y,x+1,y+1]] = true;
-      yuv.edges[[x+1,y,x,y+1]] = true;
+    if( x < imd.width-1 ) gr.add_edge( [x,y], [x+1,y] );
+    if( y < imd.height-1 ) gr.add_edge( [x,y], [x,y+1] );
+    if( x < imd.width-1 && y < imd.height-1 ) {
+      gr.add_edge( [x,y], [x+1,y+1] );
+      gr.add_edge( [x+1,y], [x,y+1] );
     }
   }  
+
+  return gr;
 }
 
-function yuv_remove_dissimilar_edges( yuv ) {
-  for (var e in yuv.edges) 
-  {
-    var ve = eval("[" + e + "]");
-    var n1 = yuv[[ ve[0],ve[1] ]];
-    var n2 = yuv[[ ve[2],ve[3] ]];
 
-    if( abs(n1[0]-n2[0])>48 ||  
-        abs(n1[1]-n2[1])>(7/255) ||
-        abs(n1[2]-n2[2])>(6/255) )
-      delete yuv.edges[e];    
+function remove_dissimilar_edges( gr ) {
+  for (var n1 in gr.edges) 
+  for (var n2 in gr.edges[n1])
+  {
+    var c1 = gr.nodes[n1];
+    var c2 = gr.nodes[n2];
+    if( abs(c1[0]-c2[0])>48 ||  
+        abs(c1[1]-c2[1])>(7/255) ||
+        abs(c1[2]-c2[2])>(6/255) )
+      gr.remove_edge(n1,n2);    
   }
 }
-function yuv_remove_crossbar( yuv ) {
+function remove_crossbar( gr ) {
   for (var x = 0; x < yuv.width-1; x++)
   for (var y = 0; y < yuv.height-1; y++)
   {
@@ -98,22 +94,16 @@ function yuv_remove_crossbar( yuv ) {
     var bl = [ x, y+1 ];
     var br = [ x+1, y+1 ];
     
-    if( yuv.edges[[ tl[0], tl[1], tr[0], tr[1] ]] &&
-        yuv.edges[[ tl[0], tl[1], bl[0], bl[1] ]] &&
-        yuv.edges[[ tl[0], tl[1], br[0], br[1] ]] &&
-        yuv.edges[[ bl[0], bl[1], br[0], br[1] ]] &&
-        yuv.edges[[ tr[0], tr[1], bl[0], bl[1] ]] &&
-        yuv.edges[[ tr[0], tr[1], br[0], br[1] ]] )
+    if( yuv.edges[t1][tr] && yuv.edges[tl][bl] &&
+        yuv.edges[tl][br] && yuv.edges[bl][br] &&
+        yuv.edges[tr][bl] && yuv.edges[tr][br] )
     {
-      delete yuv.edges[[ tl[0], tl[1], br[0], br[1] ]];
-      delete yuv.edges[[ tr[0], tr[1], bl[0], bl[1] ]];
-    }         
+      gr.remove_edge(tl,br);
+      gr.remove_edge(tr,bl);
+    }
   }
 }
 
-function count_edges( yuv ){
-  alert( "edge count: " + sizeof(yuv.edges) );
-}
 function render_remove_dissimilar_edges( imd, yuv ) {
   for (var x = 0; x < imd.width; x++)
   for (var y = 0; y < imd.height; y++)
