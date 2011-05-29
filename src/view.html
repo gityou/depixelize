@@ -10,14 +10,22 @@
     <script type="text/javascript" src="Graph.js"></script>
     <script type="text/javascript" src="Depixelize.js"></script>  
     <script type="text/javascript">
+      function count( o ) {
+        var count = 0;
+        for( var _ in o ) count++;
+        return count;
+      }
       function main() {
         var r = Raphael("canvas1",600,500);
         r.image("dolphin.png",0,0,160,64);
 
-        var gr = Graph( true );
-        gr.add_edge([0,0],[1,1]);
-        gr.add_edge([0,1],[1,0]);
-        gr.draw( r, 0, 100, 100 );
+        var imd = load_imd( "dolphin.png" );        
+        var gr = imd_to_graph( imd );
+        remove_dissimilar_edges( gr );
+        gr.draw( r, 0, 100, 4 );
+
+        remove_crossbar( gr );
+        gr.draw( r, 0, 200, 4 );
       }
     </script>
   </head>
