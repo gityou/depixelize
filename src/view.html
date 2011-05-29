@@ -4,12 +4,18 @@
     <title>Depixelizing Pixel Art</title>
     <style>
       * { margin: 0; padding: 0; }
-      body > * { display: table; margin: 50px auto;  }
+      #canvas1 { display: table; margin: 50px auto;  }
     </style>
-    <script type="text/javascript" src="../pixel.js"></script>
+    <script type="text/javascript" src="Raphael.js"></script>
+    <script type="text/javascript" src="Depixelize.js"></script>
+    <script type="text/javascript">
+      function main() {
+        var r = Raphael("canvas1",600,500);
+        r.image("dolphin.png",0,0,160,64);
+      }
+    </script>
   </head>
-  <body onload="render_depixelized('dolphin','canvas')">
-    <div><img id="dolphin" src="dolphin.png" height="100px"/></div>
-    <div><canvas id="canvas"></canvas></div>
+  <body onload="main()">
+    <div id="canvas1"></div>
   </body>
 </html>
