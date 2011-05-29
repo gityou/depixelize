@@ -18,14 +18,21 @@
       function main() {
         var r = Raphael("canvas1",600,500);
         r.image("dolphin.png",0,0,160,64);
+        r.text( 200, 30, "Original image is 40x16 pixels." ).attr("text-anchor","start");
 
         var imd = load_imd( "dolphin.png" );        
         var gr = imd_to_graph( imd );
-        remove_dissimilar_edges( gr );
         gr.draw( r, 0, 100, 4 );
+        r.text( 200, 130, "Create graph. Each pixel is a node. Create edges to connect adjacent pixels." ).attr("text-anchor","start");
+
+        remove_dissimilar_edges( gr );
+        gr.draw( r, 0, 200, 4 );
+        r.text( 200, 230, "Remove edges between nodes of dissimilar colours." ).attr("text-anchor","start");
 
         remove_crossbar( gr );
-        gr.draw( r, 0, 200, 4 );
+        gr.draw( r, 0, 300, 4 );
+        r.text( 200, 330, "Remove diagonal edges in fully connected 2x2 node groups." ).attr("text-anchor","start");
+
       }
     </script>
   </head>
