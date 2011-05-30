@@ -23,7 +23,7 @@
         var imd = load_imd( "dolphin.png" );        
         var gr = imd_to_graph( imd );
         gr.draw( r, 0, 100, 4 );
-        r.text( 200, 130, "Create graph. Each pixel is a node. Create edges to connect adjacent pixels." ).attr("text-anchor","start");
+        r.text( 200, 130, "Create graph. Each pixel is a node. Edges connect adjacent pixels." ).attr("text-anchor","start");
 
         remove_dissimilar_edges( gr );
         gr.draw( r, 0, 200, 4 );

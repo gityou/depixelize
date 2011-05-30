@@ -81,3 +81,23 @@ function remove_crossbar( gr ) {
   }
 }
 
+
+function draw_svg( r, gr, x, y, scale ) {
+  x = x || 0;
+  y = y || 0;
+  scale = scale || 1;
+  var polygons = gr.polygons();
+  for( var p in polygons ){
+    var path = "M" + gr.tr(p[0],x,y,scale);
+    for( var ni=1; ni<p.length; i++ )
+    {
+      var n1 = p[ni-1];
+      var n2 = p[ni];
+      path += "C" + gr.tr(gr.edges[n1][n2][n1],x,y,scale)
+                  + gr.tr(gr.edges[n1][n2][n2],x,y,scale)
+                  + gr.tr(n2);
+    }
+    r.path(path).attr({fill: "#666"});
+  }
+
+}
